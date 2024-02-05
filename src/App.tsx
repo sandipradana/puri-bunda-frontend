@@ -1,35 +1,41 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Outlet, Route, Routes, Navigate } from "react-router-dom";
+import BlankLayout from "./components/blank-layout";
+import Login from "./pages/login";
+import Home from "./pages/home";
+import MainLayout from "./components/main-layout";
+import Dashboard from "./pages/dashboard";
+import { useLocalStorage } from "@uidotdev/usehooks";
+import Employees from "./pages/employees";
+import Units from "./pages/units";
+import Roles from "./pages/roles";
+import './app.scss'
 
 function App() {
-  const [count, setCount] = useState(0)
 
-  return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    const [isAuthenticated, setIsAuthenticated] = useLocalStorage("isAuthenticated", false);
+
+    return (
+        <Routes>
+            <Route element={<BlankLayout />}>
+                <Route path="/" element={<Home />} />
+                <Route path="/login" element={<Login setIsAuthenticated={setIsAuthenticated} />} />
+            </Route>
+            <Route element={<Protected isAuthenticated={isAuthenticated} />}>
+                <Route element={<MainLayout />}>
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/employees" element={<Employees />} />
+                    <Route path="/units" element={<Units />} />
+                    <Route path="/roles" element={<Roles />} />
+                </Route>
+            </Route>
+        </Routes>
+    )
 }
 
-export default App
+const Protected = ({ isAuthenticated = false }) => {
+    return isAuthenticated ? (
+        <Outlet />
+    ) : <Navigate to="/login" replace={true} />;
+};
+
+export default App;
